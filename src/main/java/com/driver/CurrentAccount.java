@@ -9,43 +9,90 @@ public class CurrentAccount extends BankAccount{
         this.tradeLicenseId = tradeLicenseId;
         if(balance<5000)
         {
-            throw new InsufficientBalanceException("Insufficient Balance");
+            throw new Exception("Insufficient Balance");
         }
     }
 
     public void validateLicenseId() throws Exception {
-        // A trade license Id is said to be valid if no two consecutive characters are same
         // If the license Id is valid, do nothing
         // If the characters of the license Id can be rearranged to create any valid license Id
         // If it is not possible, throw "Valid License can not be generated" Exception
-        String s = this.tradeLicenseId;
-                int m[]=new int[26];//Hashmap to store the frequency of each character
-                int n=s.length();
-                for(int i=0;i<n;i++)
-                    m[s.charAt(i)-'A']++;
+        if(!isNumberValid(tradeLicenseId))
+        {
+            String rearranged = RearrangeString(tradeLicenseId);
+            if(rearranged==""){
+                throw new Exception("Valid License can not be generated");
+            }
+            else
+                this.tradeLicenseId = rearranged;
+        }
 
-                StringBuilder ans=new StringBuilder();
-                int i=0;
-                char prev='*';//Keep track of previous character
-                while(i<n){
-                    int maxi=0,ind=0;
-                    //We traverse the entire hashmap to find the character with maximum count and not equal to previous character
-                    for(int j=0;j<26;j++){
-                        if(m[j]>maxi&&prev!=(j+'A')&&m[j]>0){
-                            maxi=m[j];
-                            ind=j;
-                        }
-                    }
-                    if(maxi==0) //If maxi is 0 then no solution can be made as suitable element not found
-                    {
-                        throw new ValidLicenseCanNotBeGenerated("Valid License Can Not Be Generated");
-                    }
-                    prev=(char)(ind+'A');//Updating previous
-                    ans.append(prev);
-                    m[ind]--;  //Decreasing count from map since the character is done
-                    i++;
-                }
-                s= ans.toString();
+    }
+    public char getCountChar(int[] count)
+    {
+        int max =0;
+        char ch =0;
+        for(int i=0;i<26;i++)
+        {
+            if(count[i]>max)
+            {
+                max = count[i];
+                ch = (char)((int)'A'+i);
+            }
+        }
+        return ch;
+    }
+    public String RearrangeString(String s)
+    {
+        int N = s.length();
+        int[] count = new int[26];
+        for(int i=0;i<26;i++)
+        {
+            count[i] =0;
+        }
+        for(char c : s.toCharArray())
+        {
+            count[(int)c-(int)'A']++;
+        }
+        char c_max = getCountChar(count);
+        int maxCount = count[(int)c_max-(int)'A'];
+        if(maxCount>(N+1)/2)
+            return "";
+        String res = "";
+        for(int i=0;i<N;i++)
+        {
+            res +=' ';
+        }
+        int ind =0;
+        while(maxCount>0)
+        {
+            res = res.substring(0,ind)+c_max+res.substring(ind+1);
+            ind = ind+2;
+            maxCount--;
+        }
+        count[(int)c_max-(int)'A'] = 0;
+        for(int i =0;i<26;i++)
+        {
+            while(count[i]>0)
+            {
+                ind=(ind>=N)?1:ind;
+                res = res.substring(0,ind)+(char)((int)'A'+i)+res.substring(ind+1);
+                ind+=2;
+                count[i]--;
+            }
+        }
+        return res;
+    }
+    public boolean isNumberValid(String licenseId)
+    {
+        for(int i=0;i<licenseId.length()-1;i++)
+        {
+            if(licenseId.charAt(i)==licenseId.charAt(i+1)) return false;
+        }
+        return true;
     }
 
+    public String getTradeLicenseId() {
+        return tradeLicenseId;
+    }
 }
